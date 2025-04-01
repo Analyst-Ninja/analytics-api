@@ -85,7 +85,9 @@ def create_event(
     session: Session = Depends(get_session)
 ):
     data = payload.model_dump() # payload -> dict -> pydantic
+    print(data)
     obj = EventModel.model_validate(data)
+    print(obj)
     session.add(obj)
     session.commit()
     session.refresh(obj)
