@@ -40,7 +40,7 @@ class EventCreateSchema(SQLModel):
 class EventBucketSchema(SQLModel):
     bucket: datetime
     page: str
-    ua: Optional[str] = ""
+    # ua: Optional[str] = ""
     operating_system: Optional[str] = ""
     average_duration: Optional[float] = 0.0
     count: int
