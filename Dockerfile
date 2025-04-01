@@ -1,27 +1,64 @@
-FROM python:3.10.16-slim-bullseye
+# 1 - Download & Install Python 3
+FROM python:3.13.2-slim-bullseye
 
-# Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends bash curl ca-certificates
+# setup linux os packages
 
-# Install uv (UltraViolet package manager)
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
-RUN sh /uv-installer.sh && rm /uv-installer.sh
+# 2 - Create Virtual Environment
+# 3 - Install Python Packages - `pip install <package-name>`
+# 4 - FastAPI Hello World
 
-# Set the PATH
-ENV PATH="/root/.local/bin/:$PATH"
 
-# Set working directory
-WORKDIR /app
+# Create a virtual environment
+RUN python -m venv /opt/venv
 
-# Copy dependencies files
-COPY ./pyproject.toml ./uv.lock /app/
+# Set the virtual environment as the current location
+ENV PATH=/opt/venv/bin:$PATH
 
-# Create and sync virtual environment
-RUN uv venv && uv sync
+# Upgrade pip
+RUN pip install --upgrade pip
 
-# Activate virtual environment
-ENV PATH="/app/.venv/bin/:$PATH"
+# Set Python-related environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# RUN cd /app/src
+# Install os dependencies for our mini vm
+RUN apt-get update && apt-get install -y \
+    # for postgres
+    libpq-dev \
+    # for Pillow
+    libjpeg-dev \
+    # for CairoSVG
+    libcairo2 \
+    # other
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# RUN uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# Create the mini vm's code directory
+RUN mkdir -p /code
+
+# Set the working directory to that same code directory
+WORKDIR /code
+
+# Copy the requirements file into the container
+COPY requirements.txt /tmp/requirements.txt
+
+# copy the project code into the container's working directory
+COPY ./src /code
+
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
+
+
+# make the bash script executable
+COPY ./boot/docker-run.sh /opt/run.sh
+RUN chmod +x /opt/run.sh
+
+# Clean up apt cache to reduce image size
+RUN apt-get remove --purge -y \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Run the FastAPI project via the runtime script
+# when the container starts
+CMD ["/opt/run.sh"]

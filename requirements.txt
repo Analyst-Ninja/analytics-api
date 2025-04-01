@@ -1,0 +1,12 @@
+fastapi==0.115.11
+uvicorn
+gunicorn
+sqlmodel
+pydantic
+sqlalchemy
+timescaledb
+requests
+python-decouple
+psycopg[binary] # psycopg v3
+python-dotenv
+# psycopg2-binary
