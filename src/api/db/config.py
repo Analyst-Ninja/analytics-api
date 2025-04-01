@@ -1,6 +1,6 @@
-from dotenv import load_dotenv
-import os
-load_dotenv()
+# pip install python-decouple
+from decouple import config as decouple_config
 
-DATABASE_URL=os.getenv("DATABASE_URL")
-DB_TIMEZONE=os.getenv("DB_TIMEZONE")
+
+DATABASE_URL = decouple_config("DATABASE_URL", default="")
+DB_TIMEZONE = decouple_config("DB_TIMEZONE", default="UTC")
